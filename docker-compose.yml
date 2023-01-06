@@ -11,7 +11,7 @@ services:
       - TZ=${TZ:-Asia/Seoul}
     volumes:
       - ./volumes/storage/nginx/certs:/etc/letsencrypt
-      - ./volumes/storage/nginx/www:/var/www/sites
+      - ./volumes/storage/nginx/www:/var/www
       - ./volumes/storage/nginx/logs:/var/log/nginx
       - ./volumes/storage/nginx/configs/mod:/etc/nginx/mod
       - ./volumes/storage/nginx/configs/sites-enabled:/etc/nginx/sites-enabled

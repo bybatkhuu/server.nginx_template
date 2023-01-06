@@ -109,7 +109,7 @@ RUN rm -vrf /var/lib/apt/lists/* /var/cache/apt/archives/* /tmp/* /root/.cache/*
 	addgroup --gid 11000 www-group && \
 	echo -e "\nalias ls='ls -aF --group-directories-first --color=auto'" >> /root/.bashrc && \
 	echo -e "alias ll='ls -alhF --group-directories-first --color=auto'\n" >> /root/.bashrc && \
-	mkdir -vp /var/lib/nginx /var/log/nginx /var/www/html /var/www/.well-known/acme-challenge /etc/nginx/modules-enabled /etc/nginx/conf.d /etc/nginx/sites-enabled /etc/nginx/ssl /etc/letsencrypt/live && \
+	mkdir -vp /var/lib/nginx /var/log/nginx /var/www/.well-known/acme-challenge /etc/nginx/modules-enabled /etc/nginx/conf.d /etc/nginx/sites-enabled /etc/nginx/ssl /etc/letsencrypt/live && \
 	openssl dhparam -out /etc/nginx/ssl/dhparam.pem 2048 && \
 	pip install --timeout 60 --no-cache-dir --upgrade pip && \
 	pip install --timeout 60 --no-cache-dir certbot certbot-nginx && \
@@ -125,7 +125,6 @@ ENV	LANG=en_US.UTF-8 \
 
 COPY --from=builder --chown=root:root /nginx /root/nginx
 RUN cd nginx && \
-	cp -vr html/* /var/www/html/ && \
 	chown -R www-data:www-group /var/www /var/log/nginx && \
 	make install && \
 	cd .. && \
