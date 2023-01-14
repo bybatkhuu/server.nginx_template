@@ -1,4 +1,21 @@
+### Linux ###
+*~
+.Trash-*
+
+### macOS ###
+# General
+.DS_Store
+._*
+
+### Windows ###
+Thumbs.db
+
+
 ## CUSTOM IGNORES ##
 
 # Files:
 **/*.gitkeep
+**/*.DS_Store
+**/*.lock
+**/*.tmp
+**/*.pyc

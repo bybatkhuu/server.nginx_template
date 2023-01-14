@@ -133,7 +133,10 @@ RUN cd nginx && \
 COPY ./configs/ /etc/nginx/
 
 
-ENTRYPOINT ["/bin/bash", "-i", "-c"]
-CMD ["/docker-entrypoint.sh"]
-# CMD ["service cron start && nginx -g 'daemon off;'"]
-# CMD ["service cron start && nginx && tail -n 100 -f /var/log/nginx/access.log"]
+ENTRYPOINT ["/docker-entrypoint.sh"]
+CMD ["nginx -g 'daemon off;'"]
+
+# ENTRYPOINT ["/bin/bash", "-i", "-c"]
+# CMD ["/docker-entrypoint.sh"]
+# CMD ["chown -R www-data:www-group /var/log/nginx && service cron start && nginx -g 'daemon off;'"]
+# CMD ["chown -R www-data:www-group /var/log/nginx && service cron start && nginx && tail -n 100 -f /var/log/nginx/access.log"]
