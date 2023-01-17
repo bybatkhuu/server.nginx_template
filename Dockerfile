@@ -128,15 +128,11 @@ RUN cd nginx && \
 	chown -R www-data:www-group /var/www /var/log/nginx && \
 	make install && \
 	cd .. && \
-	chmod +x /docker-entrypoint.sh && \
+	chmod ug+x /docker-entrypoint.sh && \
 	rm -rf nginx
 COPY ./configs/ /etc/nginx/
 
 
 ENTRYPOINT ["/docker-entrypoint.sh"]
-CMD ["nginx -g 'daemon off;'"]
-
 # ENTRYPOINT ["/bin/bash", "-i", "-c"]
-# CMD ["/docker-entrypoint.sh"]
 # CMD ["chown -R www-data:www-group /var/log/nginx && service cron start && nginx -g 'daemon off;'"]
-# CMD ["chown -R www-data:www-group /var/log/nginx && service cron start && nginx && tail -n 100 -f /var/log/nginx/access.log"]

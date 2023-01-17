@@ -16,11 +16,11 @@ services:
       - ./volumes/storage/nginx/ssl:/etc/nginx/ssl
       - ./volumes/storage/nginx/www:/var/www
       - ./volumes/storage/nginx/logs:/var/log/nginx
-      - ./scripts/docker-entrypoint.sh:/docker-entrypoint.sh
+      # - ./scripts/docker-entrypoint.sh:/docker-entrypoint.sh
     network_mode: host
     # ports:
     #   - "80:80"
     #   - "443:443"
     tty: true
-    # command: ["chown -R www-data:www-group /var/log/nginx && service cron start && nginx -g 'daemon off;'"]
-    # command: ["/bin/bash"]
+    # command: ["nginx -g 'daemon off;'"]
+    # command: ["/bin/bash", "-i", "-c"]
