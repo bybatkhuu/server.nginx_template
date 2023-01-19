@@ -2,80 +2,78 @@
 set -euo pipefail
 
 
-_run_http()
+echo "INFO: Running docker-entrypoint.sh..."
+
+SSL_DIR="${SSL_DIR:-/etc/nginx/ssl}"
+SSL_KEY_LENGTH=${SSL_KEY_LENGTH:-2048}
+
+
+_run_nginx()
 {
-	echo "INFO: Running nginx without SSL..."
-	nginx -g "daemon off;" || exit 2
+	echo "INFO: Running nginx..."
+	nginx -t || exit 2
+	nginx || exit 2
 }
 
-_run_https_self()
+_https_self()
 {
-	# service cron start || exit 2
-	echo "INFO: Running nginx with self-signed SSL..."
-	openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/nginx/ssl/self.key -out /etc/nginx/ssl/self.crt -subj "/C=${COUNTRY:-KR}/ST=${STATE:-SEOUL}/L=${LOCAL_CITY:-Seoul}/O=${ORG_NAME:-Company}/CN=${C_NAME:-www.example.com}" || exit 2\
-	nginx -g "daemon off;" || exit 2
+	echo "INFO: Preparing self-signed SSL..."
+	SSL_COUNTRY=${SSL_COUNTRY:-KR}
+	SSL_STATE=${SSL_STATE:-SEOUL}
+	SSL_LOC_CITY=${SSL_LOC_CITY:-Seoul}
+	SSL_ORG_NAME=${SSL_ORG_NAME:-Company}
+	SSL_COM_NAME=${SSL_COM_NAME:-www.example.com}
+
+	_SSL_KEY_FILE_PATH="${SSL_DIR}/self.key"
+	_SSL_CERT_FILE_PATH="${SSL_DIR}/self.crt"
+	if [ ! -f "${_SSL_KEY_FILE_PATH}" ] || [ ! -f "${_SSL_CERT_FILE_PATH}" ]; then
+		openssl req -x509 -nodes -days 365 -newkey rsa:${SSL_KEY_LENGTH} \
+			-keyout ${_SSL_KEY_FILE_PATH} -out ${_SSL_CERT_FILE_PATH} \
+			-subj "/C=${SSL_COUNTRY}/ST=${SSL_STATE}/L=${SSL_LOC_CITY}/O=${SSL_ORG_NAME}/CN=${SSL_COM_NAME}" || exit 2
+	fi
+	echo -e "SUCCESS: Done.\n"
+
+	_run_nginx
 }
 
-_run_https_valid()
+_https_lets()
 {
-	echo "INFO: Running nginx with valid SSL..."
-	nginx -g "daemon off;" || exit 2
+	echo "INFO: Watching SSL/TLS files..."
+	watchman -- trigger ${SSL_DIR} cert-update -- /bin/bash -c "nginx -s reload" || exit 2
+	echo -e "SUCCESS: Done.\n"
+
+	_run_nginx
 }
 
-_run_https_lets()
-{
-	echo "INFO: Running nginx with letsencrypt SSL..."
-	nginx -g "daemon off;" || exit 2
-}
 
 _main()
 {
-	echo "INFO: Running docker-entrypoint.sh..."
-
-	_DH_FILE_PATH="/etc/nginx/ssl/dhparam.pem"
+	_DH_FILE_PATH="${SSL_DIR}/dhparam.pem"
 	if [ ! -f "${_DH_FILE_PATH}" ]; then
-		openssl dhparam -out ${_DH_FILE_PATH} 2048 || exit 2
+		openssl dhparam -out ${_DH_FILE_PATH} ${SSL_KEY_LENGTH} || exit 2
 	fi
 
 	chown -R www-data:www-group /var/www /var/log/nginx || exit 2
 
-	_HTTPS_TYPE="none"
 
-	if [ ! -z "${1:-}" ]; then
-		if [ "${1:0:1}" = "-" ]; then
-			for _INPUT in "${@:-}"; do
-				case ${_INPUT} in
-					-s=* | --https=*)
-						_HTTPS_TYPE="${_INPUT#*=}"
-						shift;;
-					*)
-						echo "ERROR: Failed to parsing input -> ${_INPUT}"
-						echo "INFO: USAGE: ${0} -s=*, --https=* [none | self | valid | lets]"
-						exit 1;;
-				esac
-			done
-		else
-			echo "INFO: Running command -> ${@:-}"
-			/bin/bash -i -c "${@:-}" || exit 2
-			exit 0
-		fi
-	fi
-
-	case ${_HTTPS_TYPE} in
-		none)
-			_run_http
-			;;
-		self)
-			_run_https_self
-			;;
-		valid)
-			_run_https_valid
-			;;
-		lets)
-			_run_https_lets
-			;;
+	case ${1} in
+		"" | nginx)
+			_run_nginx
+			shift;;
+		-s=* | --https=*)
+			_HTTPS_TYPE="${1#*=}"
+			if [ "${_HTTPS_TYPE}" = "self" ]; then
+				_https_self
+			elif [ "${_HTTPS_TYPE}" = "lets" ]; then
+				_https_lets
+			fi
+			shift;;
+		bash | /bin/bash | /usr/bin/bash)
+			/bin/bash
+			shift;;
 		*)
-			echo "ERROR: Failed to parsing input -> ${_HTTPS_TYPE}"
+			echo "ERROR: Failed to parsing input -> ${@}"
+			echo "USAGE: ${0} nginx | -s=*, --https=* [self | lets] | bash"
 			exit 1;;
 	esac
 }

@@ -1,6 +1,7 @@
 # bybatkhuu/nginx:${BUILD_IMG_TAG}
 
-ARG BASE_IMAGE=python:3.9.16-slim-bullseye
+# ARG BASE_IMAGE=python:3.9.16-slim-bullseye
+ARG BASE_IMAGE=debian:11.6-slim
 ARG DEBIAN_FRONTEND=noninteractive
 
 
@@ -9,7 +10,7 @@ FROM ${BASE_IMAGE} as builder
 
 ARG DEBIAN_FRONTEND
 
-ARG NGINX_VERSION=1.23.2
+ARG NGINX_VERSION=1.23.3
 
 # Set the SHELL to bash with pipefail option
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -97,9 +98,10 @@ RUN rm -vrf /var/lib/apt/lists/* /var/cache/apt/archives/* /tmp/* /root/.cache/*
 		nano \
 		make \
 		openssl \
+		watchman \
 		libgeoip-dev \
-		libaugeas0 \
-		cron && \
+		# cron \
+		libaugeas0 && \
 	apt-get clean -y && \
 	sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
 	dpkg-reconfigure --frontend=noninteractive locales && \
@@ -109,13 +111,13 @@ RUN rm -vrf /var/lib/apt/lists/* /var/cache/apt/archives/* /tmp/* /root/.cache/*
 	addgroup --gid 11000 www-group && \
 	echo -e "\nalias ls='ls -aF --group-directories-first --color=auto'" >> /root/.bashrc && \
 	echo -e "alias ll='ls -alhF --group-directories-first --color=auto'\n" >> /root/.bashrc && \
-	mkdir -vp /var/lib/nginx /var/log/nginx /var/www/.well-known/acme-challenge /etc/nginx/modules-enabled /etc/nginx/conf.d /etc/nginx/sites-enabled /etc/nginx/ssl /etc/letsencrypt/live && \
-	pip install --timeout 60 --no-cache-dir --upgrade pip && \
-	pip install --timeout 60 --no-cache-dir certbot certbot-nginx && \
-	pip cache purge && \
-	echo -e "\n0 1 1 * * root /usr/local/bin/pip install --timeout 60 --no-cache-dir --upgrade certbot certbot-nginx >> /var/log/cron.log 2>&1" >> /etc/crontab && \
-	echo "#0 2 1 * * root /usr/local/bin/python -c 'import random; import time; time.sleep(random.random() * 3000)' && certbot renew -q >> /var/log/cron.log 2>&1" >> /etc/crontab && \
-	echo "#10 2 1 * * root /usr/bin/nginx -s reload >> /var/log/cron.log 2>&1" >> /etc/crontab && \
+	mkdir -vp /var/lib/nginx /var/log/nginx /var/www/.well-known/acme-challenge /etc/nginx/modules-enabled /etc/nginx/conf.d /etc/nginx/sites-enabled /etc/nginx/ssl/live && \
+	# pip install --timeout 60 --no-cache-dir --upgrade pip && \
+	# pip install --timeout 60 --no-cache-dir certbot certbot-nginx && \
+	# pip cache purge && \
+	# echo -e "\n0 1 1 * * root /usr/local/bin/pip install --timeout 60 --no-cache-dir --upgrade certbot certbot-nginx >> /var/log/cron.log 2>&1" >> /etc/crontab && \
+	# echo "#0 2 1 * * root /usr/local/bin/python -c 'import random; import time; time.sleep(random.random() * 3000)' && certbot renew -q >> /var/log/cron.log 2>&1" >> /etc/crontab && \
+	# echo "#10 2 1 * * root /usr/bin/nginx -s reload >> /var/log/cron.log 2>&1" >> /etc/crontab && \
 	rm -vrf /var/lib/apt/lists/* /var/cache/apt/archives/* /tmp/* /root/.cache/*
 
 ENV	LANG=en_US.UTF-8 \
@@ -123,16 +125,18 @@ ENV	LANG=en_US.UTF-8 \
 	LC_ALL=en_US.UTF-8
 
 COPY --from=builder --chown=root:root /nginx /root/nginx
-COPY ./scripts/docker-entrypoint.sh /docker-entrypoint.sh
+COPY ./scripts/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN cd nginx && \
 	chown -R www-data:www-group /var/www /var/log/nginx && \
 	make install && \
 	cd .. && \
-	chmod ug+x /docker-entrypoint.sh && \
+	chmod ug+x /usr/local/bin/docker-entrypoint.sh && \
 	rm -rf nginx
 COPY ./configs/ /etc/nginx/
 
 
-ENTRYPOINT ["/docker-entrypoint.sh"]
+EXPOSE 80 443
+ENTRYPOINT ["docker-entrypoint.sh"]
+CMD ["nginx"]
 # ENTRYPOINT ["/bin/bash", "-i", "-c"]
 # CMD ["chown -R www-data:www-group /var/log/nginx && service cron start && nginx -g 'daemon off;'"]
