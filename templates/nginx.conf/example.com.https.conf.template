@@ -1,5 +1,12 @@
 upstream api-server {
 	server 127.0.0.1:8000;
+
+	## Or Load Balancing:
+	# least_conn;
+	# hash ${_DOLLAR}binary_remote_addr consistent;
+	# server 127.0.0.1:8000;
+	# server 127.0.0.1:8001;
+	# server 127.0.0.1:8002;
 }
 
 
@@ -11,11 +18,11 @@ server {
 
 	## Logging:
 	access_log /dev/stdout combined;
-	access_log /var/log/nginx/example.com.access.$map_date_now.log combined;
-	access_log /var/log/nginx/example.com.access.json.$map_date_now.log json_combined;
+	access_log /var/log/nginx/example.com.access.${_DOLLAR}map_date_now.log combined;
+	access_log /var/log/nginx/example.com.access.json.${_DOLLAR}map_date_now.log json_combined;
 
 	## Restrict methods:
-	if ($request_method !~ ^(GET|POST|PUT|PATCH|DELETE|HEAD|CONNECT|OPTIONS)$) {
+	if (${_DOLLAR}request_method !~ ^(GET|POST|PUT|PATCH|DELETE|HEAD|CONNECT|OPTIONS)${_DOLLAR}) {
 		return '405';
 	}
 
@@ -27,18 +34,20 @@ server {
 	## Security headers:
 	add_header Expect-CT "max-age=604800, report-uri='https://example.com/report'" always;
 	add_header Access-Control-Allow-Origin "https://example.com" always;
-	include /etc/nginx/custom-mods/security-headers.conf;
+	include /etc/nginx/conf.d/custom-mods/security-headers.conf;
 
 	## Additional configs:
-	include /etc/nginx/custom-mods/general.conf;
-	include /etc/nginx/custom-mods/well-known.conf;
+	include /etc/nginx/conf.d/custom-mods/general.conf;
+	include /etc/nginx/conf.d/custom-mods/well-known.conf;
 
 	## Static files:
 	root /var/www/example.com/public;
 
 	location / {
-		try_files $uri $uri/ =404;
+		try_files ${_DOLLAR}uri ${_DOLLAR}uri/ =404;
 	}
+
+	# include /etc/nginx/conf.d/custom-mods/status.conf;
 }
 
 ## Subdomain as reverse proxy (HTTPS):
@@ -49,11 +58,11 @@ server {
 
 	## Logging:
 	access_log /dev/stdout combined;
-	access_log /var/log/nginx/api.example.com.access.$map_date_now.log combined;
-	access_log /var/log/nginx/api.example.com.access.json.$map_date_now.log json_combined;
+	access_log /var/log/nginx/api.example.com.access.${_DOLLAR}map_date_now.log combined;
+	access_log /var/log/nginx/api.example.com.access.json.${_DOLLAR}map_date_now.log json_combined;
 
 	## Restrict methods:
-	if ($request_method !~ ^(GET|POST|PUT|PATCH|DELETE|HEAD|CONNECT|OPTIONS)$) {
+	if (${_DOLLAR}request_method !~ ^(GET|POST|PUT|PATCH|DELETE|HEAD|CONNECT|OPTIONS)${_DOLLAR}) {
 		return '405';
 	}
 
@@ -65,17 +74,17 @@ server {
 	## Security headers:
 	add_header Expect-CT "max-age=604800, report-uri='https://example.com/report'" always;
 	add_header Access-Control-Allow-Origin "https://example.com" always;
-	include /etc/nginx/custom-mods/security-headers.conf;
+	include /etc/nginx/conf.d/custom-mods/security-headers.conf;
 
 	## Additional configs:
-	include /etc/nginx/custom-mods/general.conf;
-	include /etc/nginx/custom-mods/well-known.conf;
+	include /etc/nginx/conf.d/custom-mods/general.conf;
+	include /etc/nginx/conf.d/custom-mods/well-known.conf;
 
 	## Reverse proxy:
 	location / {
-		rewrite ^/api/(.*)$ /$1?$args break;
-		proxy_set_header Host $host;
-		include /etc/nginx/custom-mods/proxy.conf;
+		rewrite ^/api/(.*)${_DOLLAR} /${_DOLLAR}1?${_DOLLAR}args break;
+		proxy_set_header Host ${_DOLLAR}host;
+		include /etc/nginx/conf.d/custom-mods/proxy.conf;
 		proxy_pass http://api-server;
 	}
 }
@@ -87,6 +96,6 @@ server {
 	server_name .example.com;
 
 	location / {
-		return 301 https://$host$request_uri;
+		return 301 https://${_DOLLAR}host${_DOLLAR}request_uri;
 	}
 }

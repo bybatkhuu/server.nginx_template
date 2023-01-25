@@ -1,4 +1,6 @@
 {
+	"window.titleBarStyle": "custom",
+	"workbench.startupEditor": "welcomePageInEmptyWorkbench",
 	"workbench.iconTheme": "material-icon-theme",
 	"workbench.editor.highlightModifiedTabs": true,
 	"explorer.autoReveal": false,
@@ -8,6 +10,11 @@
 	"diffEditor.ignoreTrimWhitespace": false,
 	"editor.fontWeight": "500",
 	"editor.renderWhitespace": "all",
+	"editor.renderControlCharacters": true,
+	"editor.rulers": [120],
+	"editor.minimap.showSlider": "always",
+	"editor.minimap.maxColumn": 80,
+	// "editor.wordWrap": "on",
 	"editor.smoothScrolling": true,
 	"editor.detectIndentation": false,
 	"editor.insertSpaces": false,
@@ -25,6 +32,8 @@
 		"editor.insertSpaces": true,
 		"editor.tabSize": 2
 	},
+	"terminal.integrated.defaultProfile.osx": "zsh",
+	"terminal.integrated.inheritEnv": false,
 	"files.eol": "\n",
 	"files.trimTrailingWhitespace": true,
 	"files.associations":
@@ -34,7 +43,7 @@
 		"requirements*.txt": "pip-requirements",
 		"*Dockerfile*": "dockerfile",
 		".dockerignore": "ignore",
-		"*.py.bak": "python"
+		"*.py.back": "python"
 	},
 	"files.watcherExclude":
 	{
@@ -62,6 +71,7 @@
 		"**/archive/**": true,
 		"**/data/**": true,
 		"**/datasets/**": true,
+		"**/db/**": true,
 		"**/tmp/**": true,
 		"**/*.pyc": true,
 		"**/*.log": true,
@@ -106,6 +116,7 @@
 		"**/archive": true,
 		"**/data": true,
 		"**/datasets": true,
+		"**/db": true,
 		"**/tmp": true,
 		"**/*.pyc": true,
 		"**/*.log": true,
@@ -115,6 +126,36 @@
 		"**/.DS_Store": true,
 		"**/Thumbs.db": true
 	},
+	"settingsSync.ignoredSettings":
+	[
+		"workbench.colorTheme",
+		"editor.fontFamily",
+		"editor.fontSize",
+		"editor.wordWrap",
+		"terminal.integrated.fontFamily",
+		"terminal.integrated.fontSize",
+		"remote.SSH.remotePlatform",
+		"vscode_custom_css.imports",
+		"hediet.vscode-drawio.local-storage",
+		"hediet.vscode-drawio.codeLinkActivated",
+		"hediet.vscode-drawio.theme"
+	],
+	"remote.SSH.useFlock": false,
 	"python.languageServer": "Pylance",
-	"git-graph.maxDepthOfRepoSearch": 4
+	"python.formatting.provider": "black",
+	"jupyter.askForKernelRestart": false,
+	"git-graph.maxDepthOfRepoSearch": 4,
+	"github.copilot.enable":
+	{
+		"*": true,
+		"yaml": true,
+		"plaintext": true,
+		"markdown": true,
+		"python": true
+	},
+	"javascript.suggest.autoImports": false,
+	"typescript.suggest.autoImports": false,
+	"todo-tree.highlights.enabled": true,
+	"redhat.telemetry.enabled": false,
+	"workbench.enableExperiments": false
 }

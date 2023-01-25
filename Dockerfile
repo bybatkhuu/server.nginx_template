@@ -1,6 +1,3 @@
-# bybatkhuu/nginx:${BUILD_IMG_TAG}
-
-# ARG BASE_IMAGE=python:3.9.16-slim-bullseye
 ARG BASE_IMAGE=debian:11.6-slim
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -72,12 +69,10 @@ RUN rm -vrf /var/lib/apt/lists/* /var/cache/apt/archives/* /tmp/* /root/.cache/*
 	rm -rf auto contrib CHANGE* LICENSE README configure
 
 
-# Here is the production image
+# Here is the main image
 FROM ${BASE_IMAGE} as app
 
 ARG DEBIAN_FRONTEND
-
-ENV	PYTHONIOENCODING=utf-8
 
 WORKDIR /root
 
@@ -99,9 +94,9 @@ RUN rm -vrf /var/lib/apt/lists/* /var/cache/apt/archives/* /tmp/* /root/.cache/*
 		make \
 		openssl \
 		watchman \
-		libgeoip-dev \
-		# cron \
-		libaugeas0 && \
+		gettext-base \
+		apache2-utils \
+		libgeoip-dev && \
 	apt-get clean -y && \
 	sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
 	dpkg-reconfigure --frontend=noninteractive locales && \
@@ -111,13 +106,7 @@ RUN rm -vrf /var/lib/apt/lists/* /var/cache/apt/archives/* /tmp/* /root/.cache/*
 	addgroup --gid 11000 www-group && \
 	echo -e "\nalias ls='ls -aF --group-directories-first --color=auto'" >> /root/.bashrc && \
 	echo -e "alias ll='ls -alhF --group-directories-first --color=auto'\n" >> /root/.bashrc && \
-	mkdir -vp /var/lib/nginx /var/log/nginx /var/www/.well-known/acme-challenge /etc/nginx/modules-enabled /etc/nginx/conf.d /etc/nginx/sites-enabled /etc/nginx/ssl/live && \
-	# pip install --timeout 60 --no-cache-dir --upgrade pip && \
-	# pip install --timeout 60 --no-cache-dir certbot certbot-nginx && \
-	# pip cache purge && \
-	# echo -e "\n0 1 1 * * root /usr/local/bin/pip install --timeout 60 --no-cache-dir --upgrade certbot certbot-nginx >> /var/log/cron.log 2>&1" >> /etc/crontab && \
-	# echo "#0 2 1 * * root /usr/local/bin/python -c 'import random; import time; time.sleep(random.random() * 3000)' && certbot renew -q >> /var/log/cron.log 2>&1" >> /etc/crontab && \
-	# echo "#10 2 1 * * root /usr/bin/nginx -s reload >> /var/log/cron.log 2>&1" >> /etc/crontab && \
+	mkdir -vp /var/lib/nginx /var/log/nginx /var/www/.well-known /etc/nginx/ssl /etc/nginx/secrets && \
 	rm -vrf /var/lib/apt/lists/* /var/cache/apt/archives/* /tmp/* /root/.cache/*
 
 ENV	LANG=en_US.UTF-8 \
@@ -134,9 +123,9 @@ RUN cd nginx && \
 	rm -rf nginx
 COPY ./configs/ /etc/nginx/
 
+# VOLUME [ "/etc/nginx/ssl", "/etc/nginx/secrets" ]
+VOLUME [ "/etc/nginx/ssl" ]
 
 EXPOSE 80 443
 ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["nginx"]
-# ENTRYPOINT ["/bin/bash", "-i", "-c"]
-# CMD ["chown -R www-data:www-group /var/log/nginx && service cron start && nginx -g 'daemon off;'"]

@@ -1,0 +1,43 @@
+version: "3.8"
+
+# services:
+#   certbot:
+#     image: voiceprint/certbot:latest
+#     build:
+#       context: .
+#       dockerfile: Dockerfile.certbot
+#     volumes:
+#       - "./volumes/storage/nginx/ssl:/etc/letsencrypt"
+#       - "./volumes/storage/nginx/www/.well-known/acme-challenge:/var/www/.well-known/acme-challenge"
+#     deploy:
+#       replicas: 0
+#       resources:
+#         limits:
+#           cpus: "0.5"
+#           memory: 256M
+#     tty: true
+#     command: ["/bin/bash"]
+
+#   nginx:
+#     depends_on:
+#       - certbot
+#     environment:
+#       - NGINX_BASIC_AUTH_USER=${NGINX_BASIC_AUTH_USER}
+#       - NGINX_BASIC_AUTH_PASS=${NGINX_BASIC_AUTH_PASS}
+#     env_file:
+#       - .env
+#     volumes:
+#       - "./volumes/storage/nginx/www:/var/www"
+#     deploy:
+#       replicas: 0
+#       resources:
+#         limits:
+#           cpus: "1.0"
+#           memory: 1G
+#     network_mode: bridge
+#     ports:
+#       - "80:80"
+#       - "443:443"
+#     command: ["--https=lets"]
+#     command: ["--https=self"]
+#     command: ["/bin/bash"]
