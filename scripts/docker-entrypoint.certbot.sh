@@ -24,7 +24,7 @@ _main()
 
 	if [ -d "/root/.secrets/certbot" ]; then
 		find /root/.secrets/certbot -type d -exec chmod 770 {} + || exit 2
-		find /root/.secrets/certbot -type f -exec chmod 600 {} + || exit 2
+		find /root/.secrets/certbot -type f -exec chmod 660 {} + || exit 2
 		find /root/.secrets/certbot -type d -exec chmod ug+s {} + || exit 2
 	fi
 	echo -e "SUCCESS: Done.\n"
