@@ -6,9 +6,18 @@ version: "3.8"
 #     build:
 #       context: .
 #       dockerfile: Dockerfile.certbot
+#     restart: unless-stopped
+#     environment:
+#       - TERM=${TERM:-xterm}
+#       - TZ=${TZ:-Asia/Seoul}
+#       - CERTBOT_EMAIL=${CERTBOT_EMAIL}
+#       - CERTBOT_DOMAINS=${CERTBOT_DOMAINS}
+#     env_file:
+#       - .env
 #     volumes:
 #       - "./volumes/storage/nginx/ssl:/etc/letsencrypt"
 #       - "./volumes/storage/nginx/www/.well-known/acme-challenge:/var/www/.well-known/acme-challenge"
+#       - "./volumes/storage/certbot/secrets:/root/.secrets/certbot"
 #     deploy:
 #       replicas: 0
 #       resources:
@@ -16,6 +25,9 @@ version: "3.8"
 #           cpus: "0.5"
 #           memory: 256M
 #     tty: true
+#     command: ["--new"]
+#     command: ["--new", "--dns=cloudflare"]
+#     command: ["--dns=route53"]
 #     command: ["/bin/bash"]
 
 #   nginx:
@@ -28,6 +40,7 @@ version: "3.8"
 #       - .env
 #     volumes:
 #       - "./volumes/storage/nginx/www:/var/www"
+#       - "./volumes/storage/nginx/configs/sites-enabled:/etc/nginx/conf.d/sites-enabled"
 #     deploy:
 #       replicas: 0
 #       resources:

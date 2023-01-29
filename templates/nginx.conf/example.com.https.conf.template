@@ -14,7 +14,7 @@ upstream api-server {
 server {
 	listen 443 ssl http2;
 	listen [::]:443 ssl http2;
-	server_name example.com;
+	server_name example.com www.example.com;
 
 	## Logging:
 	access_log /dev/stdout combined;

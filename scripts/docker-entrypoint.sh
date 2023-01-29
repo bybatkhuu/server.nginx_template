@@ -20,6 +20,8 @@ _run_nginx()
 
 	echo "INFO: Running nginx..."
 	nginx || exit 2
+
+	exit 0
 }
 
 _https_self()
@@ -48,7 +50,10 @@ _https_self()
 _https_lets()
 {
 	echo "INFO: Watching SSL/TLS files..."
-	watchman -- trigger "${NGINX_SSL_DIR}" cert-update "*.pem" -- /bin/bash -c "nginx -s reload" || exit 2
+	if [ ! -d "${NGINX_SSL_DIR}/live" ]; then
+		mkdir -vp "${NGINX_SSL_DIR}/live" || exit 2
+	fi
+	watchman -- trigger "${NGINX_SSL_DIR}/live" cert-update "*.pem" -- /bin/bash -c "nginx -s reload" || exit 2
 	echo -e "SUCCESS: Done.\n"
 
 	_run_nginx
@@ -65,18 +70,18 @@ _main()
 	fi
 
 	if [ ! -z "${NGINX_BASIC_AUTH_USER:-}" ] && [ ! -z "${NGINX_BASIC_AUTH_PASS:-}" ]; then
-		if [ ! -f "/etc/nginx/secrets/.htpasswd" ]; then
-			echo "INFO: Generating htpasswd file..."
-			htpasswd -cb /etc/nginx/secrets/.htpasswd ${NGINX_BASIC_AUTH_USER} ${NGINX_BASIC_AUTH_PASS} || exit 2
+		if [ ! -f "${NGINX_SSL_DIR}/.htpasswd" ]; then
+			echo "INFO: Creating htpasswd file..."
+			htpasswd -cb "${NGINX_SSL_DIR}/.htpasswd" ${NGINX_BASIC_AUTH_USER} ${NGINX_BASIC_AUTH_PASS} || exit 2
 			echo -e "SUCCESS: Done.\n"
 		fi
 	fi
 
-	if [ ! -d "/var/www/.well-known" ]; then
-		mkdir -vp /var/www/.well-known || exit 2
+	if [ ! -d "/var/www/.well-known/acme-challenge" ]; then
+		mkdir -vp /var/www/.well-known/acme-challenge || exit 2
 	fi
 
-	echo "INFO: Setting permissions..."
+	echo "INFO: Changing permissions..."
 	chown -R www-data:www-group /var/www /var/log/nginx || exit 2
 
 	find /var/www -type d -exec chmod 775 {} + || exit 2
@@ -86,13 +91,9 @@ _main()
 	find /var/log/nginx -type d -exec chmod 775 {} + || exit 2
 	find /var/log/nginx -type f -exec chmod 664 {} + || exit 2
 	find /var/log/nginx -type d -exec chmod ug+s {} + || exit 2
-
-	find /etc/nginx/secrets -type d -exec chmod 775 {} + || exit 2
-	find /etc/nginx/secrets -type f -exec chmod 664 {} + || exit 2
-	find /etc/nginx/secrets -type d -exec chmod ug+s {} + || exit 2
 	echo -e "SUCCESS: Done.\n"
 
-	# Rendering template configs:
+	## Rendering template configs:
 	find "${NGINX_TEMPLATE_DIR}" -follow -type f -name "*${NGINX_TEMPLATE_SUFFIX}" -print | while read -r _TEMPLATE_PATH; do
 		_TEMPLATE_FILENAME="${_TEMPLATE_PATH#$NGINX_TEMPLATE_DIR/}"
 		_OUTPUT_PATH="${NGINX_SITE_ENABLED_DIR}/${_TEMPLATE_FILENAME%${NGINX_TEMPLATE_SUFFIX}}"
@@ -104,9 +105,9 @@ _main()
 		echo -e "SUCCESS: Done.\n"
 	done
 
-	# Parsing input:
+	## Parsing input:
 	case ${1} in
-		"" | nginx)
+		"" | -n | --nginx | nginx)
 			_run_nginx
 			shift;;
 		-s=* | --https=*)
@@ -117,12 +118,12 @@ _main()
 				_https_lets
 			fi
 			shift;;
-		bash | /bin/bash | /usr/bin/bash)
+		-b | --bash | bash | /bin/bash)
 			/bin/bash
 			shift;;
 		*)
 			echo "ERROR: Failed to parsing input -> ${@}"
-			echo "USAGE: ${0} nginx | -s=*, --https=* [self | lets] | bash"
+			echo "USAGE: ${0} -n, --nginx. nginx | -s=*, --https=* [self | lets] | -b, --bash, bash, /bin/bash"
 			exit 1;;
 	esac
 }

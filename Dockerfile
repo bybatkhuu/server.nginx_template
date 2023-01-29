@@ -106,7 +106,7 @@ RUN rm -vrf /var/lib/apt/lists/* /var/cache/apt/archives/* /tmp/* /root/.cache/*
 	addgroup --gid 11000 www-group && \
 	echo -e "\nalias ls='ls -aF --group-directories-first --color=auto'" >> /root/.bashrc && \
 	echo -e "alias ll='ls -alhF --group-directories-first --color=auto'\n" >> /root/.bashrc && \
-	mkdir -vp /var/lib/nginx /var/log/nginx /var/www/.well-known /etc/nginx/ssl /etc/nginx/secrets && \
+	mkdir -vp /var/lib/nginx /var/log/nginx /var/www/.well-known/acme-challenge /etc/nginx/ssl /etc/nginx/modules-enabled /etc/nginx/sites-enabled && \
 	rm -vrf /var/lib/apt/lists/* /var/cache/apt/archives/* /tmp/* /root/.cache/*
 
 ENV	LANG=en_US.UTF-8 \
@@ -123,9 +123,7 @@ RUN cd nginx && \
 	rm -rf nginx
 COPY ./configs/ /etc/nginx/
 
-# VOLUME [ "/etc/nginx/ssl", "/etc/nginx/secrets" ]
 VOLUME [ "/etc/nginx/ssl" ]
 
 EXPOSE 80 443
 ENTRYPOINT ["docker-entrypoint.sh"]
-CMD ["nginx"]

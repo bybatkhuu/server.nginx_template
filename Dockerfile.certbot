@@ -39,11 +39,9 @@ RUN rm -vrf /var/lib/apt/lists/* /var/cache/apt/archives/* /tmp/* /root/.cache/*
 	echo -e "\nalias ls='ls -aF --group-directories-first --color=auto'" >> /root/.bashrc && \
 	echo -e "alias ll='ls -alhF --group-directories-first --color=auto'\n" >> /root/.bashrc && \
 	pip install --timeout 60 --no-cache-dir --upgrade pip && \
-	pip install --timeout 60 --no-cache-dir certbot certbot-nginx certbot-dns-cloudflare && \
+	pip install --timeout 60 --no-cache-dir certbot certbot-dns-cloudflare && \
 	pip cache purge && \
-	echo -e "\n0 1 1 * * root /usr/local/bin/pip install --timeout 60 --no-cache-dir --upgrade certbot certbot-nginx certbot-dns-cloudflare >> /var/log/cron.log 2>&1" >> /etc/crontab && \
-	echo "#0 2 * * 1 root /usr/local/bin/python -c 'import random; import time; time.sleep(random.random() * 3600)' && certbot renew -q >> /var/log/cron.log 2>&1" >> /etc/crontab && \
-	mkdir -vp /var/www/.well-known/acme-challenge /etc/letsencrypt/live && \
+	mkdir -vp /etc/letsencrypt/live /var/lib/letsencrypt /var/log/letsencrypt /var/www/.well-known/acme-challenge && \
 	rm -vrf /var/lib/apt/lists/* /var/cache/apt/archives/* /tmp/* /root/.cache/*
 
 ENV	LANG=en_US.UTF-8 \
@@ -56,4 +54,3 @@ RUN chmod ug+x /usr/local/bin/docker-entrypoint.sh
 VOLUME [ "/etc/letsencrypt" ]
 
 ENTRYPOINT ["docker-entrypoint.sh"]
-# CMD ["certbot"]
