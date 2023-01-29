@@ -98,11 +98,13 @@ _main()
 		_TEMPLATE_FILENAME="${_TEMPLATE_PATH#$NGINX_TEMPLATE_DIR/}"
 		_OUTPUT_PATH="${NGINX_SITE_ENABLED_DIR}/${_TEMPLATE_FILENAME%${NGINX_TEMPLATE_SUFFIX}}"
 
-		echo "INFO: Rendering template -> ${_TEMPLATE_PATH} -> ${_OUTPUT_PATH}"
-		export _DOLLAR="$"
-		envsubst < "$_TEMPLATE_PATH" > "$_OUTPUT_PATH" || exit 2
-		unset _DOLLAR
-		echo -e "SUCCESS: Done.\n"
+		if [ ! -f "${_OUTPUT_PATH}" ]; then
+			echo "INFO: Rendering template -> ${_TEMPLATE_PATH} -> ${_OUTPUT_PATH}"
+			export _DOLLAR="$"
+			envsubst < "$_TEMPLATE_PATH" > "$_OUTPUT_PATH" || exit 2
+			unset _DOLLAR
+			echo -e "SUCCESS: Done.\n"
+		fi
 	done
 
 	## Parsing input:
