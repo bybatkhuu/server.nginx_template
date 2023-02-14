@@ -465,4 +465,5 @@ zsdoc/data
 docker-compose.override.yml
 docker-compose.override.yaml
 
+volumes
 volumes/

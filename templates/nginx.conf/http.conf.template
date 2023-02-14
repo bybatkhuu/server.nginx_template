@@ -26,11 +26,11 @@ server {
 	}
 
 	## Security headers:
-	include /etc/nginx/conf.d/custom-mods/security-headers.conf;
+	include /etc/nginx/conf.d/security-headers.conf;
 
 	## Additional configs:
-	include /etc/nginx/conf.d/custom-mods/general.conf;
-	include /etc/nginx/conf.d/custom-mods/well-known.conf;
+	include /etc/nginx/conf.d/general.conf;
+	include /etc/nginx/conf.d/well-known.conf;
 
 	## Static files:
 	root /var/www/web/public;
@@ -41,9 +41,9 @@ server {
 
 	location ^~ /api {
 		proxy_set_header Host ${_DOLLAR}host;
-		include /etc/nginx/conf.d/custom-mods/proxy.conf;
+		include /etc/nginx/conf.d/proxy.conf;
 		proxy_pass http://api-server;
 	}
 
-	# include /etc/nginx/conf.d/custom-mods/status.conf;
+	# include /etc/nginx/conf.d/status.conf;
 }

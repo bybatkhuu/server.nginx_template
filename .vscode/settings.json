@@ -34,7 +34,8 @@
 		"requirements*.txt": "pip-requirements",
 		"*Dockerfile*": "dockerfile",
 		".dockerignore": "ignore",
-		"*.py.bak": "python"
+		"*.py.bak": "python",
+		"*.conf.template": "nginx"
 	},
 	"files.watcherExclude":
 	{
@@ -115,6 +116,5 @@
 		"**/.DS_Store": true,
 		"**/Thumbs.db": true
 	},
-	"python.languageServer": "Pylance",
 	"git-graph.maxDepthOfRepoSearch": 4
 }

@@ -35,11 +35,11 @@ server {
 	## Security headers:
 	add_header Expect-CT "max-age=604800, report-uri='https://example.com/report'" always;
 	add_header Access-Control-Allow-Origin "https://example.com" always;
-	include /etc/nginx/conf.d/custom-mods/security-headers.conf;
+	include /etc/nginx/conf.d/security-headers.conf;
 
 	## Additional configs:
-	include /etc/nginx/conf.d/custom-mods/general.conf;
-	include /etc/nginx/conf.d/custom-mods/well-known.conf;
+	include /etc/nginx/conf.d/general.conf;
+	include /etc/nginx/conf.d/well-known.conf;
 
 	## Static files:
 	root /var/www/example.com/public;
@@ -48,7 +48,7 @@ server {
 		try_files ${_DOLLAR}uri ${_DOLLAR}uri/ =404;
 	}
 
-	# include /etc/nginx/conf.d/custom-mods/status.conf;
+	# include /etc/nginx/conf.d/status.conf;
 }
 
 ## Subdomain as reverse proxy (HTTPS):
@@ -76,17 +76,17 @@ server {
 	## Security headers:
 	add_header Expect-CT "max-age=604800, report-uri='https://example.com/report'" always;
 	add_header Access-Control-Allow-Origin "https://example.com" always;
-	include /etc/nginx/conf.d/custom-mods/security-headers.conf;
+	include /etc/nginx/conf.d/security-headers.conf;
 
 	## Additional configs:
-	include /etc/nginx/conf.d/custom-mods/general.conf;
-	include /etc/nginx/conf.d/custom-mods/well-known.conf;
+	include /etc/nginx/conf.d/general.conf;
+	include /etc/nginx/conf.d/well-known.conf;
 
 	## Reverse proxy:
 	location / {
 		rewrite ^/api/(.*)${_DOLLAR} /${_DOLLAR}1?${_DOLLAR}args break;
 		proxy_set_header Host ${_DOLLAR}host;
-		include /etc/nginx/conf.d/custom-mods/proxy.conf;
+		include /etc/nginx/conf.d/proxy.conf;
 		proxy_pass http://api-server;
 	}
 }
@@ -97,7 +97,7 @@ server {
 	listen [::]:80;
 	server_name .example.com;
 
-	include /etc/nginx/conf.d/custom-mods/letsencrypt.conf;
+	include /etc/nginx/conf.d/letsencrypt.conf;
 
 	location / {
 		return 301 https://${_DOLLAR}host${_DOLLAR}request_uri;
