@@ -11,6 +11,6 @@ services:
       - TZ=${TZ:-Asia/Seoul}
     volumes:
       - "./volumes/storage/nginx/configs/templates:/etc/nginx/templates"
-    ports:
-      - "${NGINX_HTTP_PORT:-80}:${NGINX_HTTP_PORT:-80}"
+      - "./volumes/storage/nginx/logs:/var/log/nginx"
+    network_mode: host
     tty: true
