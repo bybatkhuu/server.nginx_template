@@ -117,6 +117,7 @@ COPY --from=builder --chown=root:root /nginx /root/nginx
 COPY ./scripts/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN cd nginx && \
 	chown -R www-data:www-group /var/www /var/log/nginx && \
+	chmod -R 775 /var/www /var/log/nginx && \
 	make install && \
 	cd .. && \
 	chmod ug+x /usr/local/bin/docker-entrypoint.sh && \

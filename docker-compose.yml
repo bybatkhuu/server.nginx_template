@@ -10,6 +10,7 @@ services:
       - TERM=${TERM:-xterm}
       - TZ=${TZ:-Asia/Seoul}
     volumes:
-      - "./volumes/storage/nginx/ssl:/etc/nginx/ssl"
-    network_mode: host
+      - "./volumes/storage/nginx/configs/templates:/etc/nginx/templates"
+    ports:
+      - "80:${NGINX_PORT:-80}"
     tty: true

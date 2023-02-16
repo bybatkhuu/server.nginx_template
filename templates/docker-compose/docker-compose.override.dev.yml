@@ -8,8 +8,8 @@ services:
     # env_file:
     #   - .env
     volumes:
-      - "./volumes/storage/nginx/configs/templates:/etc/nginx/templates"
-      - "./volumes/storage/nginx/www:/var/www"
+      # - "./volumes/storage/nginx/ssl:/etc/nginx/ssl"
+      # - "./volumes/storage/nginx/www:/var/www"
       - "./volumes/storage/nginx/logs:/var/log/nginx"
       - "./volumes/storage/nginx/configs/sites-enabled:/etc/nginx/sites-enabled"
       - "./configs/nginx.conf:/etc/nginx/nginx.conf"
@@ -21,10 +21,8 @@ services:
     #     limits:
     #       cpus: "1.0"
     #       memory: 1G
-    # network_mode: bridge
-    # ports:
-    #   - "80:80"
-    #   - "443:443"
-    # command: ["--https=lets"]
+    # network_mode: host
     # command: ["--https=self"]
+    # command: ["--https=valid"]
+    # command: ["--https=lets"]
     # command: ["/bin/bash"]

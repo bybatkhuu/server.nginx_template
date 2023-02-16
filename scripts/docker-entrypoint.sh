@@ -24,8 +24,21 @@ _run_nginx()
 	exit 0
 }
 
+
+_generate_dhparam()
+{
+	_DHPARAM_FILE_PATH="${NGINX_SSL_DIR}/${NGINX_DHPARAM_FILENAME}"
+	if [ ! -f "${_DHPARAM_FILE_PATH}" ]; then
+		echo "INFO: Generating Diffie-Hellman parameters..."
+		openssl dhparam -out ${_DHPARAM_FILE_PATH} ${NGINX_SSL_KEY_LENGTH} || exit 2
+		echo -e "SUCCESS: Done.\n"
+	fi
+}
+
 _https_self()
 {
+	_generate_dhparam
+
 	echo "INFO: Preparing self-signed SSL..."
 	NGINX_SSL_COUNTRY=${NGINX_SSL_COUNTRY:-KR}
 	NGINX_SSL_STATE=${NGINX_SSL_STATE:-SEOUL}
@@ -49,6 +62,15 @@ _https_self()
 
 _https_lets()
 {
+	_generate_dhparam
+
+	if [ ! -d "/var/www/.well-known/acme-challenge" ]; then
+		mkdir -vp /var/www/.well-known/acme-challenge || exit 2
+		chown -R www-data:www-group /var/www/.well-known || exit 2
+		find /var/www/.well-known -type d -exec chmod 775 {} + || exit 2
+		find /var/www/.well-known -type d -exec chmod ug+s {} + || exit 2
+	fi
+
 	echo "INFO: Watching SSL/TLS files..."
 	if [ ! -d "${NGINX_SSL_DIR}/live" ]; then
 		mkdir -vp "${NGINX_SSL_DIR}/live" || exit 2
@@ -62,13 +84,6 @@ _https_lets()
 
 _main()
 {
-	_DHPARAM_FILE_PATH="${NGINX_SSL_DIR}/${NGINX_DHPARAM_FILENAME}"
-	if [ ! -f "${_DHPARAM_FILE_PATH}" ]; then
-		echo "INFO: Generating Diffie-Hellman parameters..."
-		openssl dhparam -out ${_DHPARAM_FILE_PATH} ${NGINX_SSL_KEY_LENGTH} || exit 2
-		echo -e "SUCCESS: Done.\n"
-	fi
-
 	if [ ! -z "${NGINX_BASIC_AUTH_USER:-}" ] && [ ! -z "${NGINX_BASIC_AUTH_PASS:-}" ]; then
 		if [ ! -f "${NGINX_SSL_DIR}/.htpasswd" ]; then
 			echo "INFO: Creating htpasswd file..."
@@ -77,20 +92,34 @@ _main()
 		fi
 	fi
 
-	if [ ! -d "/var/www/.well-known/acme-challenge" ]; then
-		mkdir -vp /var/www/.well-known/acme-challenge || exit 2
+	if [ ! -d "/var/www" ]; then
+		mkdir -vp /var/www || exit 2
 	fi
 
-	echo "INFO: Changing permissions..."
-	chown -R www-data:www-group /var/www /var/log/nginx || exit 2
+	if [ ! -d "/var/log/nginx" ]; then
+		mkdir -vp /var/log/nginx || exit 2
+	fi
 
-	find /var/www -type d -exec chmod 775 {} + || exit 2
-	find /var/www -type f -exec chmod 664 {} + || exit 2
-	find /var/www -type d -exec chmod ug+s {} + || exit 2
+	echo "INFO: Checking permissions..."
+	if [ "$(stat -c '%U:%G' /var/www)" != "www-data:www-group" ]; then
+		chown -R www-data:www-group /var/www || exit 2
+	fi
 
-	find /var/log/nginx -type d -exec chmod 775 {} + || exit 2
-	find /var/log/nginx -type f -exec chmod 664 {} + || exit 2
-	find /var/log/nginx -type d -exec chmod ug+s {} + || exit 2
+	if [ "$(stat -c '%a' /var/www)" != "775" ]; then
+		find /var/www -type d -exec chmod 775 {} + || exit 2
+		find /var/www -type f -exec chmod 664 {} + || exit 2
+		find /var/www -type d -exec chmod ug+s {} + || exit 2
+	fi
+
+	if [ "$(stat -c '%U:%G' /var/log/nginx)" != "www-data:www-group" ]; then
+		chown -R www-data:www-group /var/log/nginx || exit 2
+	fi
+
+	if [ "$(stat -c '%a' /var/log/nginx)" != "775" ]; then
+		find /var/log/nginx -type d -exec chmod 775 {} + || exit 2
+		find /var/log/nginx -type f -exec chmod 664 {} + || exit 2
+		find /var/log/nginx -type d -exec chmod ug+s {} + || exit 2
+	fi
 	echo -e "SUCCESS: Done.\n"
 
 	## Rendering template configs:
@@ -116,6 +145,8 @@ _main()
 			_HTTPS_TYPE="${1#*=}"
 			if [ "${_HTTPS_TYPE}" = "self" ]; then
 				_https_self
+			elif [ "${_HTTPS_TYPE}" = "valid" ]; then
+				_generate_dhparam
 			elif [ "${_HTTPS_TYPE}" = "lets" ]; then
 				_https_lets
 			fi
@@ -125,7 +156,7 @@ _main()
 			shift;;
 		*)
 			echo "ERROR: Failed to parsing input -> ${@}"
-			echo "USAGE: ${0} -n, --nginx. nginx | -s=*, --https=* [self | lets] | -b, --bash, bash, /bin/bash"
+			echo "USAGE: ${0} -n, --nginx. nginx | -s=*, --https=* [self | valid | lets] | -b, --bash, bash, /bin/bash"
 			exit 1;;
 	esac
 }

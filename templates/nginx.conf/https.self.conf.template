@@ -26,6 +26,7 @@ server {
 	}
 
 	## SSL:
+	include /etc/nginx/conf.d/ssl.conf;
 	ssl_certificate /etc/nginx/ssl/self.crt;
 	ssl_certificate_key /etc/nginx/ssl/self.key;
 
