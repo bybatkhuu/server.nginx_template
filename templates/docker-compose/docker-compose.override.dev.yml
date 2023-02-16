@@ -8,11 +8,11 @@ services:
     # env_file:
     #   - .env
     volumes:
+      - "./scripts/docker-entrypoint.sh:/usr/local/bin/docker-entrypoint.sh"
+      - "./configs/nginx.conf:/etc/nginx/nginx.conf"
+      - "./volumes/storage/nginx/configs/sites-enabled:/etc/nginx/sites-enabled"
       # - "./volumes/storage/nginx/www:/var/www"
       # - "./volumes/storage/nginx/ssl:/etc/nginx/ssl"
-      - "./volumes/storage/nginx/configs/sites-enabled:/etc/nginx/sites-enabled"
-      - "./configs/nginx.conf:/etc/nginx/nginx.conf"
-      - "./scripts/docker-entrypoint.sh:/usr/local/bin/docker-entrypoint.sh"
       - "./volumes/.vscode-server:/root/.vscode-server"
     # deploy:
     #   replicas: 0
