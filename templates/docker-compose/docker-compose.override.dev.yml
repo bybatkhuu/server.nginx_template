@@ -22,6 +22,8 @@ services:
     #       cpus: "1.0"
     #       memory: 1G
     # network_mode: host
+    # ports:
+    #   - "${NGINX_HTTPS_PORT:-443}:${NGINX_HTTPS_PORT:-443}"
     # command: ["--https=self"]
     # command: ["--https=valid"]
     # command: ["--https=lets"]

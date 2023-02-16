@@ -12,5 +12,5 @@ services:
     volumes:
       - "./volumes/storage/nginx/configs/templates:/etc/nginx/templates"
     ports:
-      - "80:${NGINX_PORT:-80}"
+      - "${NGINX_HTTP_PORT:-80}:${NGINX_HTTP_PORT:-80}"
     tty: true
