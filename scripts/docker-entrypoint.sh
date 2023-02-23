@@ -62,7 +62,14 @@ _https_self()
 
 _https_lets()
 {
-	_generate_dhparam
+	if [ ! -d "${NGINX_SSL_DIR}/live" ]; then
+		mkdir -vp "${NGINX_SSL_DIR}/live" || exit 2
+	fi
+
+	while [ $(find "${NGINX_SSL_DIR}/live" -name "*.pem" | wc -l) -le 2 ]; do
+		echo "INFO: Waiting for certbot to obtain SSL/TLS files..."
+		sleep 1
+	done
 
 	if [ ! -d "/var/www/.well-known/acme-challenge" ]; then
 		mkdir -vp /var/www/.well-known/acme-challenge || exit 2
@@ -71,10 +78,9 @@ _https_lets()
 		find /var/www/.well-known -type d -exec chmod ug+s {} + || exit 2
 	fi
 
-	echo "INFO: Watching SSL/TLS files..."
-	if [ ! -d "${NGINX_SSL_DIR}/live" ]; then
-		mkdir -vp "${NGINX_SSL_DIR}/live" || exit 2
-	fi
+	_generate_dhparam
+
+	echo "INFO: Setting up watcher for SSL/TLS files..."
 	watchman -- trigger "${NGINX_SSL_DIR}/live" cert-update "*.pem" -- /bin/bash -c "nginx -s reload" || exit 2
 	echo -e "SUCCESS: Done.\n"
 
